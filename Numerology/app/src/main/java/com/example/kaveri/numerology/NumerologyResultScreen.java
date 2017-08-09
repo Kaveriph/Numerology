@@ -3,9 +3,12 @@ package com.example.kaveri.numerology;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +25,10 @@ public class NumerologyResultScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_numerology_result_screen);
-        initData();
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         initUI();
+        initData();
     }
 
     private void initData() {
@@ -33,34 +38,87 @@ public class NumerologyResultScreen extends AppCompatActivity {
         String mobile = numerologyInetnt.getStringExtra(AppConstants.MOBILE);
         String vehicle = numerologyInetnt.getStringExtra(AppConstants.VEHICLE);
 
-        int nameTotalValue = calculateTotalValue(name);
-        int dobTotalValue = calculateTotalValue(dob);
-        int mobileTotalValue = calculateTotalValue(mobile);
-        int vehicleTotalValue = calculateTotalValue(vehicle);
-
-        int namePyramidValue = calculatePyramidValue(name);
-        int dobPyramidValue = calculatePyramidValue(dob);
-        int mobilePyramidValue = calculatePyramidValue(mobile);
-        int vehiclePyramidValue = calculatePyramidValue(vehicle);
-
-        Log.d(TAG, "total : "+nameTotalValue+", "+dobTotalValue+", "+mobileTotalValue+", "+vehicleTotalValue);
-        Log.d(TAG, "pyramid : "+namePyramidValue+", "+dobPyramidValue+", "+mobilePyramidValue+", "+vehiclePyramidValue);
         List<NumerologyResultData> mNumerologyResultData = new ArrayList<>();
+
+        if(!TextUtils.isEmpty(name)) {
+            int nameTotalValue = calculateTotalValue(name);
+            int namePyramidValue = calculatePyramidValue(name);
+            mNumerologyResultData.add(new NumerologyResultData(name, nameTotalValue, namePyramidValue));
+        }
+        if(!TextUtils.isEmpty(dob)) {
+            int dobTotalValue = calculateTotalValue(dob);
+            int dobPyramidValue = calculatePyramidValueForDate(dob);
+            mNumerologyResultData.add(new NumerologyResultData(dob, dobTotalValue, dobPyramidValue));
+        }
+        if(!TextUtils.isEmpty(mobile)) {
+            int mobileTotalValue = calculateTotalValue(mobile);
+            int mobilePyramidValue = calculatePyramidValue(mobile);
+            mNumerologyResultData.add(new NumerologyResultData(mobile, mobileTotalValue, mobilePyramidValue));
+        }
+        if(!TextUtils.isEmpty(vehicle)) {
+            int vehicleTotalValue = calculateTotalValue(vehicle);
+            int vehiclePyramidValue = calculatePyramidValue(vehicle);
+            mNumerologyResultData.add(new NumerologyResultData(vehicle, vehicleTotalValue, vehiclePyramidValue));
+        }
         NumerologyResultAdapter numerologyResultAdapter = new NumerologyResultAdapter(mNumerologyResultData);
+        numerologyResulList.setAdapter(numerologyResultAdapter);
     }
 
     private int calculatePyramidValue(String name) {
         String pyramidValue = "";
         CharSequence nameCharSeq = name;
         if(nameCharSeq.length() > 2) {
-            for (int i = 0; i < nameCharSeq.length(); i++) {
-                int charEquivalentValue = getEquivalentCharValue(nameCharSeq.charAt(i));
-                if(charEquivalentValue != -1)
-                    pyramidValue = pyramidValue + charEquivalentValue;
-            }
+            pyramidValue = getEquivalentNumGeneratePyramid(pyramidValue, nameCharSeq);
             return generatePyramid(pyramidValue);
         }
-        return Integer.parseInt(name);
+
+        return pyramidValForSingleLetter(name, pyramidValue, nameCharSeq);
+
+    }
+
+
+    private int calculatePyramidValueForDate(String name) {
+
+        String day = name.substring(0,2);
+        String month = name.substring(3,5);
+        String year = name.substring(6);
+        String mainString = calculatePyramidValueForDatePart(day)+""+calculatePyramidValueForDatePart(month)
+                +""+calculatePyramidValueForDatePart(year)+"";
+        return calculatePyramidValue(mainString);
+    }
+
+    private int calculatePyramidValueForDatePart(String name) {
+        String pyramidValue = "";
+        CharSequence nameCharSeq = name;
+        if(nameCharSeq.length() > 1) {
+            pyramidValue = getEquivalentNumGeneratePyramid(pyramidValue, nameCharSeq);
+            return generatePyramidForDatePart(pyramidValue);
+        }
+
+        return pyramidValForSingleLetter(name, pyramidValue, nameCharSeq);
+
+    }
+
+    private int pyramidValForSingleLetter(String name, String pyramidValue, CharSequence nameCharSeq) {
+        if(Character.isDigit(nameCharSeq.charAt(0))){
+            if( nameCharSeq.length() > 1) {
+                if(Character.isDigit(nameCharSeq.charAt(1)))
+                    return Integer.parseInt(name);
+                else
+                    return Integer.parseInt(getEquivalentNumGeneratePyramid(pyramidValue, nameCharSeq));
+            } else
+                return Integer.parseInt(name);
+        } else
+            return Integer.parseInt(getEquivalentNumGeneratePyramid(pyramidValue, nameCharSeq));
+    }
+
+    private String getEquivalentNumGeneratePyramid(String pyramidValue, CharSequence nameCharSeq) {
+        for (int i = 0; i < nameCharSeq.length(); i++) {
+            int charEquivalentValue = getEquivalentCharValue(nameCharSeq.charAt(i));
+            if(charEquivalentValue != -1)
+                pyramidValue = pyramidValue + charEquivalentValue;
+        }
+        return pyramidValue;
     }
 
     private int generatePyramid(String pyramidValue) {
@@ -74,6 +132,17 @@ public class NumerologyResultScreen extends AppCompatActivity {
         return Integer.parseInt(pyramidValue);
     }
 
+    private int generatePyramidForDatePart(String pyramidValue) {
+        if(pyramidValue.length() > 1) {
+            String newPyramidValue = "";
+            for(int i=0; i<pyramidValue.length()-1 ;i++) {
+                newPyramidValue = newPyramidValue + sumUpIndividualNum(Integer.parseInt(pyramidValue.substring(i, i+2)));
+            }
+            return generatePyramidForDatePart(newPyramidValue);
+        }
+        return Integer.parseInt(pyramidValue);
+    }
+
     private int calculateTotalValue(String name) {
         if(!TextUtils.isEmpty(name)) {
             int totalValue = 0;
@@ -83,7 +152,7 @@ public class NumerologyResultScreen extends AppCompatActivity {
                 if(equivalentCharValue != -1)
                     totalValue = totalValue + equivalentCharValue;
             }
-            return sumUpIndividualNum(totalValue);
+            return totalValue;
         }
         return 0;
     }
@@ -113,7 +182,9 @@ public class NumerologyResultScreen extends AppCompatActivity {
 
     private void initUI() {
         numerologyResulList = (RecyclerView) findViewById(R.id.numerologyResultList);
-
+        numerologyResulList.setHasFixedSize(true);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
+        numerologyResulList.setLayoutManager(mLayoutManager);
     }
 
 }

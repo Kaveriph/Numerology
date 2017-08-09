@@ -6,4 +6,6 @@
     <string name="mobile_num">Mobile Number</string>
     <string name="vehicle_num">Vehicle Number</string>
     <string name="check">Check</string>
+    <string name="total_value">Total value</string>
+    <string name="pyramid_value">Pyramid value</string>
 </resources>

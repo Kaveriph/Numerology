@@ -7,12 +7,12 @@ public class NumerologyResultData {
 
     private String name;
     private int totalValue;
-    private int puramidValue;
+    private int pyramidValue;
 
     public NumerologyResultData(String name, int totalValue, int puramidValue) {
         this.name = name;
         this.totalValue = totalValue;
-        this.puramidValue = puramidValue;
+        this.pyramidValue = puramidValue;
     }
 
     @Override
@@ -20,7 +20,7 @@ public class NumerologyResultData {
         return "NumerologyResultData{" +
                 "name='" + name + '\'' +
                 ", totalValue=" + totalValue +
-                ", puramidValue=" + puramidValue +
+                ", pyramidValue=" + pyramidValue +
                 '}';
     }
 
@@ -40,11 +40,11 @@ public class NumerologyResultData {
         this.totalValue = totalValue;
     }
 
-    public int getPuramidValue() {
-        return puramidValue;
+    public int getPyramidValue() {
+        return pyramidValue;
     }
 
-    public void setPuramidValue(int puramidValue) {
-        this.puramidValue = puramidValue;
+    public void setPyramidValue(int pyramidValue) {
+        this.pyramidValue = pyramidValue;
     }
 }
